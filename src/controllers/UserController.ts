@@ -1,6 +1,7 @@
 import { verify } from "jsonwebtoken";
 import { pg } from "../config/database";
 import bcrypt from "bcrypt";
+import { Request, Response } from "express";
 
 export const userController = {
   get: async (id) => {
@@ -35,27 +36,9 @@ export const userController = {
     return await pg.query(query);
   },
 
-  updateAvatar: async (req, res) => {
+  signup: async (req: Request, res: Response) => {
     const params = req.body;
-    const data = (await verify(req.token, "secretkey")) as any;
-    const query = {
-      text: "UPDATE auth.user_info SET avatar=$1 WHERE id=$2",
-      values: [params.avatar, data.id],
-    };
-
-    pg.query(query, async (err, result) => {
-      if (err) {
-        res.json({
-          error: err,
-        });
-      } else {
-        res.status(200).json({ message: "ok" });
-      }
-    });
-  },
-  signup: async (req, res) => {
-    const params = req.body;
-    console.log(req);
+    console.log("params", req.params);
     const query = {
       text: "INSERT INTO public.users (user_name,user_password) VALUES ($1,$2) RETURNING id;",
       values: [

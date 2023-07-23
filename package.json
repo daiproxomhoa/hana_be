@@ -2,10 +2,10 @@
   "name": "hana_be",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon dist/index.js",
+    "start": "concurrently \"tsc -w\" \"nodemon dist/js/app.js\"",
     "dev": "npx tsc -w & nodemon dist/index.js"
   },
   "keywords": [],
@@ -17,6 +17,8 @@
     "@types/pg": "^8.10.2",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
+    "body-parser": "^1.20.2",
+    "concurrently": "^8.2.0",
     "dayjs": "^1.11.9",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
