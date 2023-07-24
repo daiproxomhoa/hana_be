@@ -1,41 +1,9 @@
-import { verify } from "jsonwebtoken";
-import { pg } from "../config/database";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
+import { sign } from "jsonwebtoken";
+import { pg } from "../config/database";
 
 export const userController = {
-  get: async (id) => {
-    const query = {
-      text:
-        "SELECT account.username, user_info.address, user_info.birthday, user_info.gender,user_info.avatar, user_info.id, user_info.phone " +
-        "FROM auth.account inner join auth.user_info ON auth.account.id=auth.user_info.id AND auth.account.id=$1 ",
-      values: [id],
-    };
-    console.log("query", query);
-    return await pg.query(query);
-  },
-  detail: async (params) => {
-    const query = {
-      text: "SELECT address, birthday, gender, id, phone FROM auth.user_info WHERE id=$1",
-      values: [params.id],
-    };
-    return await pg.query(query);
-  },
-  update: async (params) => {
-    const query = {
-      text: "UPDATE auth.user_info SET address=$1, birthday=$2, gender=$3, phone=$4 ,avatar=$5 WHERE id=$6",
-      values: [
-        params.address,
-        params.birthday,
-        params.gender,
-        params.phone,
-        params.avatar,
-        params.id,
-      ],
-    };
-    return await pg.query(query);
-  },
-
   signup: async (req: Request, res: Response) => {
     const params = req.body;
     const query2 = {
@@ -50,9 +18,10 @@ export const userController = {
           error: err,
         });
       } else {
-        if (result.rows[0]) {
+        const userInfo = result.rows[0];
+        if (userInfo) {
           res.json({
-            error: "Tài khoản đã tồn tại",
+            error: { message: "Tài khoản đã tồn tại" },
           });
         } else {
           const query = {
@@ -65,7 +34,6 @@ export const userController = {
               ),
             ],
           };
-
           pg.query(query, async (err, result) => {
             if (err) {
               res.json({
@@ -81,11 +49,60 @@ export const userController = {
       }
     });
   },
-  delete: async (params) => {
+
+  login: async (req: Request, res: Response) => {
+    const params = req.body;
     const query = {
-      text: "DELETE FROM public.users WHERE id=$1",
-      values: [params.id],
+      name: "get-user_name",
+      text: `SELECT * FROM users WHERE user_name = $1`,
+      values: [params.user_name],
     };
-    return await pg.query(query);
+    pg.query(query, async (err, result) => {
+      if (result.rowCount) {
+        const userInfo = result.rows?.[0];
+        const match = bcrypt.compareSync(
+          params.user_password,
+          userInfo.user_password
+        );
+        if (match) {
+          res.json({
+            data: userInfo,
+            token: sign(userInfo, process.env.SECRET_KEY || "", {
+              expiresIn: "2 days",
+            }),
+          });
+        } else {
+          res.json({
+            error: [{ message: "Mật khẩu không đúng" }],
+          });
+        }
+      } else {
+        res.json({
+          error: [{ message: "Tài khoản không tồn tại" }],
+        });
+      }
+    });
+  },
+  delete: async (req: Request, res: Response) => {
+    const query = {
+      text: "DELETE FROM users WHERE id=$1",
+      values: [req.params.userId],
+    };
+    pg.query(query, (error, result) => {
+      if (error) {
+        res.json({
+          error: error,
+        });
+      }
+      if (result.rowCount > 0) {
+        res.json({
+          message: "Xoá  thành công",
+        });
+      } else {
+        res.json({
+          error: [{ message: "Tài khoản không tồn tại" }],
+        });
+      }
+    });
   },
 };

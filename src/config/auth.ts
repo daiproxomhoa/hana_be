@@ -2,18 +2,22 @@ import { verify } from "jsonwebtoken";
 
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers["authorization"];
-  if (typeof bearerHeader !== "undefined") {
-    req.token = bearerHeader;
-    verify(req.token, "secretkey", (err, authData) => {
+
+  const token = bearerHeader?.split(" ")[1];
+
+  if (token) {
+    verify(token, process.env.SECRET_KEY || "", (err, authData) => {
+      console.log(authData);
+
       if (authData) {
         req.userData = authData;
         next();
       } else {
-        res.sendStatus(403);
+        res.sendStatus(401);
       }
     });
   } else {
-    res.sendStatus(403);
+    res.sendStatus(401);
   }
 };
 
