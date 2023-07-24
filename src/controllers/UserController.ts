@@ -38,27 +38,46 @@ export const userController = {
 
   signup: async (req: Request, res: Response) => {
     const params = req.body;
-    console.log("params", req.params);
-    const query = {
-      text: "INSERT INTO public.users (user_name,user_password) VALUES ($1,$2) RETURNING id;",
-      values: [
-        params.user_name,
-        bcrypt.hashSync(
-          params.password,
-          bcrypt.genSaltSync(params.user_name.length)
-        ),
-      ],
+    const query2 = {
+      name: "fetch-user",
+      text: `SELECT * FROM users WHERE user_name = $1`,
+      values: [params.user_name],
     };
-
-    pg.query(query, async (err, result) => {
+    pg.query(query2, async (err, result) => {
+      console.log("result", err, result);
       if (err) {
         res.json({
           error: err,
         });
       } else {
-        res.json({
-          data: result.rows[0],
-        });
+        if (result.rows[0]) {
+          res.json({
+            error: "Tài khoản đã tồn tại",
+          });
+        } else {
+          const query = {
+            text: "INSERT INTO public.users (user_name,user_password) VALUES ($1,$2) RETURNING id;",
+            values: [
+              params.user_name,
+              bcrypt.hashSync(
+                params.user_password,
+                bcrypt.genSaltSync(params.user_name.length)
+              ),
+            ],
+          };
+
+          pg.query(query, async (err, result) => {
+            if (err) {
+              res.json({
+                error: err,
+              });
+            } else {
+              res.json({
+                data: result.rows[0],
+              });
+            }
+          });
+        }
       }
     });
   },

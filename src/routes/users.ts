@@ -48,23 +48,23 @@ usersRouter.post(
 
 usersRouter.post(
   "/signup",
-  // checkSchema({
-  //   user_password: {
-  //     isLength: { options: { min: 5 }, errorMessage: "Ít nhất 5 ký tự" },
-  //   },
-  //   user_name: {
-  //     isLength: { options: { min: 5 }, errorMessage: "Ít nhất 5 ký tự" },
-  //     optional: {
-  //       options: { nullable: false },
-  //     },
-  //   },
-  // }),
-  // showMessage,
+  checkSchema({
+    user_password: {
+      isLength: { options: { min: 5 }, errorMessage: "Ít nhất 5 ký tự" },
+    },
+    user_name: {
+      isLength: { options: { min: 5 }, errorMessage: "Ít nhất 5 ký tự" },
+      optional: {
+        options: { nullable: false },
+      },
+    },
+  }),
+  showMessage,
   userController.signup
 );
 usersRouter.post("/", (request, response) => {
   console.log(request.body); // your JSON
-  response.send(request.body); // echo the result back
+  response.json(request.body); // echo the result back
 });
 
 usersRouter.get("/get/:id", verifyToken, async (req, res) => {
