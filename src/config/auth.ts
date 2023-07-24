@@ -7,8 +7,6 @@ const verifyToken = (req, res, next) => {
 
   if (token) {
     verify(token, process.env.SECRET_KEY || "", (err, authData) => {
-      console.log(authData);
-
       if (authData) {
         req.userData = authData;
         next();

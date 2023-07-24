@@ -4,6 +4,7 @@ import usersRouter from "./routes/users";
 import { upload } from "./config/multer";
 import { readFile, readFileSync } from "fs";
 import http from "http";
+import productRouter from "./routes/product";
 
 dotenv.config();
 const app = express();
@@ -14,6 +15,7 @@ async function main() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use("/users", usersRouter);
+  app.use("/products", productRouter);
 
   app.get("/", (req, res) => {
     res.send("Express + TypeScript Server");

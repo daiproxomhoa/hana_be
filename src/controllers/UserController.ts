@@ -12,7 +12,6 @@ export const userController = {
       values: [params.user_name],
     };
     pg.query(query2, async (err, result) => {
-      console.log("result", err, result);
       if (err) {
         res.json({
           error: err,
